@@ -51,7 +51,6 @@ import com.sahidev.lightplayer.ui.theme.LightPlayerTheme
 
 @Composable
 fun AudioRoute(
-    startAudioService: () -> Unit,
     viewModel: AudioViewModel = hiltViewModel()
 ) {
     AudioScreen(
@@ -61,11 +60,9 @@ fun AudioRoute(
         audioList = viewModel.audioList,
         onStart = {
             viewModel.onUiEvents(UiEvents.PlayPause)
-            startAudioService()
         },
         onItemClick = {
             viewModel.onUiEvents(UiEvents.SelectedAudioChange(it))
-            startAudioService()
         },
         onPrevious = { viewModel.onUiEvents(UiEvents.SeekToPrevious) },
         onNext = { viewModel.onUiEvents(UiEvents.SeekToNext) }

@@ -28,15 +28,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LightPlayerTheme {
-                AudioRoute(startAudioService = { startAudioService() })
+                AudioRoute()
             }
         }
-    }
-
-    private fun startAudioService() {
-        val intent = Intent(applicationContext, LightAudioService::class.java).also {
-            it.action = LightAudioService.Actions.START.toString()
-        }
-        startService(intent)
     }
 }

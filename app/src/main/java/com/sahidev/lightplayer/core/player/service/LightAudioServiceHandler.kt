@@ -1,9 +1,13 @@
 package com.sahidev.lightplayer.core.player.service
 
+import android.content.Context
+import android.content.Intent
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,6 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class LightAudioServiceHandler @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val exoPlayer: ExoPlayer
 ) : Player.Listener {
 
@@ -82,8 +87,10 @@ class LightAudioServiceHandler @Inject constructor(
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         when (playbackState) {
-            ExoPlayer.STATE_BUFFERING -> _audioState.value =
-                LightAudioState.Buffering(exoPlayer.currentPosition)
+            ExoPlayer.STATE_BUFFERING -> {
+                startAudioService()
+                _audioState.value = LightAudioState.Buffering(exoPlayer.currentPosition)
+            }
 
             ExoPlayer.STATE_READY -> {
                 _audioState.value = LightAudioState.Ready(exoPlayer.duration)
@@ -133,6 +140,13 @@ class LightAudioServiceHandler @Inject constructor(
     private fun stopProgressUpdate() {
         job?.cancel()
         _audioState.value = LightAudioState.Playing(isPlaying = false)
+    }
+
+    private fun startAudioService() {
+        val intent = Intent(context, LightAudioService::class.java).also {
+            it.action = LightAudioService.Actions.START.toString()
+        }
+        context.startService(intent)
     }
 }
 

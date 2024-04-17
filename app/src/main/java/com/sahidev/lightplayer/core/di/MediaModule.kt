@@ -51,8 +51,9 @@ object MediaModule {
     @Provides
     @Singleton
     fun provideServiceHandler(
+        @ApplicationContext context: Context,
         exoPlayer: ExoPlayer
     ): LightAudioServiceHandler {
-        return LightAudioServiceHandler(exoPlayer)
+        return LightAudioServiceHandler(context, exoPlayer)
     }
 }
