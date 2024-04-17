@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,9 +28,9 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,9 +56,6 @@ fun AudioRoute(
 ) {
     AudioScreen(
         progress = viewModel.progress,
-        progressString = viewModel.progressString,
-        duration = viewModel.duration,
-        onProgress = { viewModel.onUiEvents(UiEvents.SeekTo(it)) },
         isAudioPlaying = viewModel.isPlaying,
         currentPlayingAudio = viewModel.currentSelectedAudio,
         audioList = viewModel.audioList,
@@ -78,9 +76,6 @@ fun AudioRoute(
 @Composable
 fun AudioScreen(
     progress: Float,
-    progressString: String,
-    duration: Long,
-    onProgress: (Float) -> Unit,
     isAudioPlaying: Boolean,
     currentPlayingAudio: Audio,
     audioList: List<Audio>,
@@ -92,11 +87,13 @@ fun AudioScreen(
 ) {
     Scaffold { padding ->
         Column(
-            modifier = modifier.padding(padding)
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
             LazyColumn(
                 modifier = modifier.weight(1f),
-                contentPadding = PaddingValues(top = 4.dp)
+                contentPadding = PaddingValues(vertical = 4.dp)
             ) {
                 itemsIndexed(audioList) { index, audio ->
                     AudioItem(audio = audio, onItemClick = { onItemClick(index) })
@@ -104,9 +101,6 @@ fun AudioScreen(
             }
             BottomBarPlayer(
                 progress = progress,
-                progressString = progressString,
-                duration = duration,
-                onProgress = { onProgress(it) },
                 audio = currentPlayingAudio,
                 isAudioPlaying = isAudioPlaying,
                 onStart = { onStart() },
@@ -125,10 +119,8 @@ fun AudioItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 8.dp)
-            .clickable {
-                onItemClick()
-            },
+            .padding(vertical = 2.dp, horizontal = 8.dp)
+            .clickable { onItemClick() },
     ) {
         Row(
             modifier = Modifier
@@ -148,14 +140,14 @@ fun AudioItem(
                 Text(
                     text = audio.displayName,
                     style = MaterialTheme.typography.titleMedium,
-                    overflow = TextOverflow.Clip,
+                    overflow = TextOverflow.Ellipsis,
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.size(4.dp))
                 Text(
                     text = audio.artist,
                     style = MaterialTheme.typography.bodySmall,
-                    overflow = TextOverflow.Clip,
+                    overflow = TextOverflow.Ellipsis,
                     maxLines = 1
                 )
             }
@@ -168,9 +160,6 @@ fun AudioItem(
 @Composable
 fun BottomBarPlayer(
     progress: Float,
-    progressString: String,
-    duration: Long,
-    onProgress: (Float) -> Unit,
     audio: Audio,
     isAudioPlaying: Boolean,
     onStart: () -> Unit,
@@ -178,40 +167,28 @@ fun BottomBarPlayer(
     onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier
-            .padding(8.dp)
-            .height(110.dp)
-    ) {
-        ArtistInfo(audio = audio, modifier = Modifier.weight(1f))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    Column {
+        LinearProgressIndicator(
+            progress = { progress / 100f },
+            modifier = modifier
+                .fillMaxWidth()
+                .height(3.dp)
+        )
+        Column(
+            modifier = Modifier.padding(8.dp)
         ) {
-            MediaPlayerController(
-                isAudioPlaying = isAudioPlaying,
-                onStart = { onStart() },
-                onPrevious = { onPrevious() },
-                onNext = { onNext() }
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Column {
-                Slider(
-                    modifier = Modifier.height(18.dp),
-                    value = progress,
-                    onValueChange = { onProgress(it) },
-                    valueRange = 0f..100f
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ArtistInfo(audio = audio, modifier = Modifier.weight(1f))
+                MediaPlayerController(
+                    isAudioPlaying = isAudioPlaying,
+                    onStart = { onStart() },
+                    onPrevious = { onPrevious() },
+                    onNext = { onNext() }
                 )
-                Row(modifier = Modifier.padding(horizontal = 6.dp)) {
-                    Text(
-                        text = progressString
-                    )
-                    Spacer(modifier = modifier.weight(1f))
-                    Text(
-                        text = Formatter.timeStampToDuration(duration)
-                    )
-                }
             }
         }
     }
@@ -353,9 +330,6 @@ private fun AudioScreenPrev() {
     LightPlayerTheme {
         AudioScreen(
             progress = 50f,
-            progressString = "0:00",
-            duration = 0L,
-            onProgress = {},
             isAudioPlaying = false,
             currentPlayingAudio = dummyAudio,
             audioList = listOf(dummyAudio, dummyAudio),

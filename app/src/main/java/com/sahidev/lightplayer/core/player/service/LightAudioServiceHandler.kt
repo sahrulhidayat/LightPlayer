@@ -2,6 +2,7 @@ package com.sahidev.lightplayer.core.player.service
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,18 +107,18 @@ class LightAudioServiceHandler @Inject constructor(
         }
     }
 
+    override fun onTracksChanged(tracks: Tracks) {
+        _audioState.value = LightAudioState.CurrentPlaying(exoPlayer.currentMediaItemIndex)
+    }
+
     private suspend fun playOrPause() {
         if (exoPlayer.isPlaying) {
             exoPlayer.pause()
-            _audioState.value = LightAudioState.Playing(
-                isPlaying = false
-            )
+            _audioState.value = LightAudioState.Playing(isPlaying = false)
             stopProgressUpdate()
         } else {
             exoPlayer.play()
-            _audioState.value = LightAudioState.Playing(
-                isPlaying = true
-            )
+            _audioState.value = LightAudioState.Playing(isPlaying = true)
             startProgressUpdate()
         }
     }
